@@ -1,0 +1,6 @@
+Done reading joints from model files. Next step is to implement bone selection? Figure out what jid0, jid1 mean.
+- In all the provided shaders, jid0 and jid1 only appear in blending.vert. They are used for skinning. 
+
+The draw_line approach for bones is not correct. Should create cylinder geometry for the bones.
+
+The starter code has already provided create_cylinder_mesh() function to create cylinder vertices and faces. It's a cylinder aligning with x axis, ranging (-0.5, 0.5). Inorder to use this cylinder as our bones, we need to translate, rotate and scale it.

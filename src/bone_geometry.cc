@@ -26,7 +26,6 @@ std::ostream& operator<<(std::ostream& os, const BoundingBox& bounds)
 }
 
 
-
 // FIXME: Implement bone animation.
 
 
@@ -70,6 +69,7 @@ void Mesh::loadPmd(const std::string& fn)
 	//        initialize std::vectors for the vertex attributes,
 	//        also initialize the skeleton as needed
 
+	// read in joint data.
 	int jointId = 0;
 	while(true) {
 		glm::vec3 wcoord;
@@ -81,6 +81,36 @@ void Mesh::loadPmd(const std::string& fn)
 		}
 		else {
 			break;
+		}
+	}
+	// init orientation, rel_orientation and children list.
+	// computation of orientation: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
+	for(int i = 0; i < skeleton.joints.size(); i++) {
+		Joint& curr_joint = skeleton.joints[i];
+		if(curr_joint.parent_index == -1) {	// this is a root jonit
+			curr_joint.orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// identity.
+			curr_joint.rel_orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// identity.
+			// std::cout << "root joint" << std::endl;
+		}
+		else {
+			Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
+			glm::vec3 x_direct(1.0, 0.0, 0.0);
+			glm::vec3 init_direct = glm::normalize(curr_joint.init_position - parent_joint.init_position);
+			// curr_joint.orientation.xyz = glm::cross(y_direct, init_direct);
+			// curr_joint.orientation.w = std::sqrt(std::pow(glm::length(y_direct), 2) + std::pow(glm::length(init_direct), 2))
+			// 								+ glm::dot(y_direct, init_direct);
+			glm::vec3 xyz = glm::cross(x_direct, init_direct);
+			int w = std::sqrt(2) + glm::dot(x_direct, init_direct);;
+			curr_joint.orientation.x = xyz.x;
+			curr_joint.orientation.y = xyz.y;
+			curr_joint.orientation.z = xyz.z;
+			curr_joint.orientation.w = w;
+			curr_joint.orientation = glm::normalize(curr_joint.orientation);
+
+			curr_joint.rel_orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// relative orientation w.r.t. parent. Init as identity.
+
+			parent_joint.children.push_back(curr_joint.joint_index);
+			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
 		}
 	}
 
