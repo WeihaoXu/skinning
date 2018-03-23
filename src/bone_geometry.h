@@ -87,6 +87,9 @@ struct Mesh {
 	void updateAnimation();
 	int getNumberOfBones() const;
 	glm::vec3 getCenter() const { return 0.5f * glm::vec3(bounds.min + bounds.max); }
+
+	glm::vec3 getJointPosition(int joint_index) const;
+
 private:
 	void computeBounds();
 	void computeNormals();

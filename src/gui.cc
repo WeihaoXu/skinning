@@ -70,7 +70,7 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 	} else if (key == GLFW_KEY_T && action != GLFW_RELEASE) {
 		transparent_ = !transparent_;
 	}
-}
+} 
 
 void GUI::mousePosCallback(double mouse_x, double mouse_y)
 {
@@ -106,12 +106,26 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	}
 
 	// FIXME: highlight bones that have been moused over
+	current_bone_ = -1;
 	glm::vec3 mouse_pos = glm::unProject(glm::vec3(current_x_, current_y_, 1.0f),
 											model_matrix_,
 											projection_matrix_,
-											view_matrix_);
-	// calculate min distance between ray and line segment: http://geomalgorithms.com/a07-_distance.html
-	current_bone_ = -1;
+											viewport);
+	glm::vec3 click_ray_direct = glm::normalize(mouse_pos - eye_);
+	glm::vec3 click_ray_end = eye_ + PICK_RAY_LEN * click_ray_direct;
+	float min_distance = std::numeric_limits<float>::max();
+	for(int i = 0; i < mesh_->getNumberOfBones(); i++) {	// iterate all bones, and find the one with min distance
+		int parent_index = mesh_->skeleton.joints[i].parent_index;
+		glm::vec3 bone_start_position = mesh_->getJointPosition(i);
+		glm::vec3 bone_end_position = mesh_->getJointPosition(parent_index);
+		float curr_distance = line_segment_distance(eye_, click_ray_end, bone_start_position, bone_end_position);
+		if(curr_distance < kCylinderRadius && curr_distance < min_distance) {
+			min_distance = curr_distance;
+			current_bone_ = i;
+		}
+	}
+	// std::cout << "current bone: " << current_bone_ << std::endl;
+	
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)

@@ -206,8 +206,11 @@ int main(int argc, char* argv[])
 	//        Otherwise, do whatever you like here
 	glm::mat4 bone_transform_matrix;
 	auto bone_transform_data = [&mesh, &bone_transform_matrix]() -> const void* {
-		bone_transform_matrix = mesh.skeleton.getBoneTransform();
+		bone_transform_matrix = mesh.skeleton.getBoneTransform();	
 		return &bone_transform_matrix[0][0];
+	};
+	auto cylinder_radius_data = [&kCylinderRadius]() -> const void* {
+		return &kCylinderRadius;
 	};
 
 
@@ -224,6 +227,7 @@ int main(int argc, char* argv[])
 	// FIXME: define more ShaderUniforms for RenderPass if you want to use it.
 	//        Otherwise, do whatever you like here
 	ShaderUniform bone_transform = { "bone_transform", matrix_binder, bone_transform_data };
+	ShaderUniform cylinder_radius = { "cylinder_radius", float_binder, cylinder_radius_data};
 
 
 	// Floor render pass
@@ -299,7 +303,7 @@ int main(int argc, char* argv[])
 	cylinder_pass_input.assignIndex(cylinder_mesh.indices.data(), cylinder_mesh.indices.size(), 2);
 	RenderPass cylinder_pass(-1, cylinder_pass_input,
 			{ cylinder_vertex_shader, nullptr, cylinder_fragment_shader },
-			{ std_model, std_view, std_proj, bone_transform },
+			{ std_model, std_view, std_proj, bone_transform, cylinder_radius },
 			{ "fragment_color" }
 			);
 

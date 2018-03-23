@@ -4,6 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
+#include "procedure_geometry.h"
+
+#define PICK_RAY_LEN 1000.0f	// shoot a ray of this len when picking bones
 
 struct Mesh;
 

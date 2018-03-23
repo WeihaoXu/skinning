@@ -84,6 +84,7 @@ void Mesh::loadPmd(const std::string& fn)
 			Joint curr_joint(jointId, wcoord, parentId);
 			skeleton.joints.push_back(curr_joint);
 			jointId++;
+			std::cout << "join " << jointId << ": (" << wcoord.x << ", " << wcoord.y << ", " << wcoord.z << ")" << std::endl;
 		}
 		else {
 			break;
@@ -131,6 +132,11 @@ void Mesh::updateAnimation()
 int Mesh::getNumberOfBones() const
 {
 	return skeleton.joints.size();
+}
+
+glm::vec3 Mesh::getJointPosition(int joint_index) const
+{
+	return skeleton.joints[joint_index].position;
 }
 
 void Mesh::computeBounds()
