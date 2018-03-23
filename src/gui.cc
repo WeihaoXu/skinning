@@ -106,6 +106,11 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	}
 
 	// FIXME: highlight bones that have been moused over
+	glm::vec3 mouse_pos = glm::unProject(glm::vec3(current_x_, current_y_, 1.0f),
+											model_matrix_,
+											projection_matrix_,
+											view_matrix_);
+	// calculate min distance between ray and line segment: http://geomalgorithms.com/a07-_distance.html
 	current_bone_ = -1;
 }
 
