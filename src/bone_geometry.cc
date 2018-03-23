@@ -49,6 +49,12 @@ const glm::fquat* Skeleton::collectJointRot() const
 	return joint_rot.data();
 }
 
+// my implementation for getting bone transform matrix:
+const glm::mat4 Skeleton::getBoneTransform() const
+{
+	return bone_transforms[0];	// for tmp test use
+}
+
 Mesh::Mesh()
 {
 }
@@ -112,6 +118,7 @@ void Mesh::loadPmd(const std::string& fn)
 			parent_joint.children.push_back(curr_joint.joint_index);
 			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
 		}
+		skeleton.bone_transforms.push_back(glm::mat4(1.0));
 	}
 
 }

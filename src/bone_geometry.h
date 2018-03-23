@@ -58,6 +58,8 @@ struct Skeleton {
 	const glm::fquat* collectJointRot() const;
 
 	// FIXME: create skeleton and bone data structures
+	std::vector<glm::mat4> bone_transforms;	// translate, 
+	const glm::mat4 getBoneTransform() const;
 };
 
 struct Mesh {

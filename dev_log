@@ -4,3 +4,14 @@ Done reading joints from model files. Next step is to implement bone selection? 
 The draw_line approach for bones is not correct. Should create cylinder geometry for the bones.
 
 The starter code has already provided create_cylinder_mesh() function to create cylinder vertices and faces. It's a cylinder aligning with x axis, ranging (-0.5, 0.5). Inorder to use this cylinder as our bones, we need to translate, rotate and scale it.
+
+
+- The position and orientation in each joint object are both in world coordinates? 
+
+
+successfully made use of geometry shader to draw "cylinders". (not really cylinder, but the vertices created by create_cylinder_mesh. Need to transform them into cylinder shape in cylinder_vert_shader)
+
+
+Spent one hour to debug: pass transform matrix into cylinder shader. Problem: in the lambda for bone_transform_data, returned the pointer of a temporary matrix, which expires once outside the scope!!!
+
+
