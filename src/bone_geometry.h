@@ -59,7 +59,7 @@ struct Skeleton {
 
 	// FIXME: create skeleton and bone data structures
 	std::vector<glm::mat4> bone_transforms;	
-	void calculate_bone_transforms();
+	// void calculate_bone_transforms();
 	const glm::mat4 getBoneTransform(int joint_index) const;
 
 };

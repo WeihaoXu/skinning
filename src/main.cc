@@ -211,14 +211,15 @@ int main(int argc, char* argv[])
 			bone_transform_matrix = mesh.skeleton.getBoneTransform(current_bone);	
 		}
 		else {
-			bone_transform_matrix = mesh.skeleton.getBoneTransform(0);	// won't be used anyway
+			bone_transform_matrix = glm::mat4(1.0f);	// won't be used anyway
 		}
 		printMat4(bone_transform_matrix);
 		return &bone_transform_matrix[0][0];
 		
 	};
-	auto cylinder_radius_data = [&kCylinderRadius]() -> const void* {
-		return &kCylinderRadius;
+	float radius = kCylinderRadius;
+	auto cylinder_radius_data = [&radius]() -> const void* {
+		return &radius;
 	};
 
 
@@ -375,11 +376,13 @@ int main(int argc, char* argv[])
 		draw_cylinder = (current_bone != -1 && gui.isTransparent());
 
 		
-		// try draw cylinders		
-		cylinder_pass.setup();
-		CHECK_GL_ERROR(glDrawElements(GL_LINES,
+		if(draw_cylinder) {
+			cylinder_pass.setup();
+			CHECK_GL_ERROR(glDrawElements(GL_LINES,
 		                              cylinder_mesh.indices.size() * 2,
 		                              GL_UNSIGNED_INT, 0));
+		}
+		
 		
 
 

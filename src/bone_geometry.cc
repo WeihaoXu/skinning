@@ -8,6 +8,7 @@
 #include <glm/gtx/io.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 /*
  * For debugging purpose.
@@ -51,42 +52,26 @@ const glm::fquat* Skeleton::collectJointRot() const
 }
 
 
-// calculate bone_transform_mats that transform cylinders to bones
-void Skeleton::calculate_bone_transforms() {
-	bone_transforms.clear();
-	glm::mat4 curr_transform;
-	for(int i = 0; i < joints.size(); i++) {
-		int parent_index = joints[i].parent_index;
-		glm::vec3 translate;
-		// glm::mat4 translate;
-		float length = 0;
-		if(parent_index == -1) {	// root
-			// translate = glm::translate(glm::vec3(0.0, 0.0, 0.0));	// whatever. A root joints doesn't refer to any bones
-			translate = glm::vec3(0.0f, 0.0f, 0.0f);
-			length = 10;
-		}
-		else {
-			translate = glm::vec3(0.0f, 1.0f, 0.0f);	// for debug
-			// translate = glm::translate(glm::vec3(0.0, 1.0, 0.0));	// for debug
-			// translate = (joints[i].position + joints[parent_index].position) * 0.5f;
-			std::cout << "bone center: (" << translate.x << ", " << translate.y << ", " << translate.z << ")" << std::endl;	// lengths are normal
-			length =  glm::length(joints[i].position - joints[parent_index].position);
-			std::cout << "length of joint " << i << ": " << length << std::endl;	// lengths are normal
-		}
-		// curr_transform = glm::scale(curr_transform, glm::vec3(1.0, length, 1.0));
-		// curr_transform =  glm::toMat4(joints[i].orientation) * curr_transform;	// rotate cylinder
-
-		curr_transform = glm::translate(curr_transform, translate.x, translate.y, translate.z);
-		// curr_transform = translate * curr_transform;
-		bone_transforms.push_back(curr_transform);
-	}
-}
-
 
 // my implementation for getting bone transform matrix:
+// remember that every bone is pointing from parent to child!
 const glm::mat4 Skeleton::getBoneTransform(int joint_index) const
 {
-	return bone_transforms[joint_index];
+	// return bone_transforms[joint_index];
+	const Joint& curr_joint = joints[joint_index];
+	const Joint& parent_joint = joints[curr_joint.parent_index];
+
+	float length = glm::length(curr_joint.position - parent_joint.position);
+	glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0, length, 1.0));
+
+	glm::mat4 rotate_matrix = glm::toMat4(curr_joint.orientation);
+
+	glm::vec3 translate = parent_joint.position;
+	glm::mat4 translate_matrix = glm::translate(glm::mat4(1.0f), translate);
+
+
+	return translate_matrix * rotate_matrix * scale_matrix;
+
 }
 
 
@@ -150,7 +135,7 @@ void Mesh::loadPmd(const std::string& fn)
 		}
 		// skeleton.bone_transforms.push_back(glm::mat4(1.0));	// for tmp use
 	}
-	skeleton.calculate_bone_transforms();
+	// skeleton.calculate_bone_transforms();
 }
 
 void Mesh::updateAnimation()

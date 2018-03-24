@@ -145,16 +145,54 @@ float line_segment_distance(const glm::vec3& line1_start, const glm::vec3& line1
 }
 
 // find the quaternion transform one direction into another.
-// ref: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
+// reference: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
+// It seems not working
+/*
 glm::fquat quaternion_between_two_directs(const glm::vec3& direct1, const glm::vec3& direct2) {
 	glm::vec3 unit_dir1 = glm::normalize(direct1);
 	glm::vec3 unit_dir2 = glm::normalize(direct2);
 	glm::vec3 xyz = glm::cross(unit_dir1, unit_dir2);
 	int w = std::sqrt(2) + glm::dot(unit_dir1, unit_dir2);
-	glm::fquat result(w, xyz.x, xyz.y, xyz.z);
+	glm::fquat result(xyz.x, xyz.y, xyz.z, w);
 	result = glm::normalize(result);
 	return result;
 }
+*/
+
+// reference: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/#how-do-i-find-the-rotation-between-2-vectors-
+glm::fquat quaternion_between_two_directs(glm::vec3 start, glm::vec3 dest){
+	start = glm::normalize(start);
+	dest = glm::normalize(dest);
+
+	float cosTheta = dot(start, dest);
+	glm::vec3 rotationAxis;
+
+	if (cosTheta < -1 + 0.001f){
+		// special case when vectors in opposite directions:
+		// there is no "ideal" rotation axis
+		// So guess one; any will do as long as it's perpendicular to start
+		rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
+		if (glm::length2(rotationAxis) < 0.01 ) // bad luck, they were parallel, try again!
+			rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
+
+		rotationAxis = glm::normalize(rotationAxis);
+		return glm::angleAxis(glm::radians(180.0f), rotationAxis);
+	}
+
+	rotationAxis = glm::cross(start, dest);
+
+	float s = sqrt( (1+cosTheta)*2 );
+	float invs = 1 / s;
+
+	return glm::fquat(
+		s * 0.5f, 
+		rotationAxis.x * invs,
+		rotationAxis.y * invs,
+		rotationAxis.z * invs
+	);
+
+}
+
 
 void printMat4(const glm::mat4& mat) {
 	for(int i = 0; i < 4; i++) {
