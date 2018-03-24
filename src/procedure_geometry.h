@@ -19,6 +19,7 @@ void create_axes_mesh(LineMesh& axes_mesh);
 float line_segment_distance(const glm::vec3& line1_start, const glm::vec3& line1_end, 
 							const glm::vec3& line2_start, const glm::vec3& line2_end);
 glm::fquat quaternion_between_two_directs(glm::vec3 from, glm::vec3 to);
+float angle_between_two_directs_2D(glm::vec2 direct1, glm::vec2 direct2);
 void printMat4(const glm::mat4& mat);
 
 #endif

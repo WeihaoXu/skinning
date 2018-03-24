@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 		else {
 			bone_transform_matrix = glm::mat4(1.0f);	// won't be used anyway
 		}
-		printMat4(bone_transform_matrix);
+		// printMat4(bone_transform_matrix);
 		return &bone_transform_matrix[0][0];
 		
 	};

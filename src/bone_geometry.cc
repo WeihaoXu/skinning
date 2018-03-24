@@ -124,7 +124,8 @@ void Mesh::loadPmd(const std::string& fn)
 			// calculate orientation w.r.t. y axis.
 			glm::vec3 y_direct(0.0, 1.0, 0.0);
 			glm::vec3 init_direct = curr_joint.init_position - parent_joint.init_position;
-			curr_joint.orientation = quaternion_between_two_directs(y_direct, init_direct);
+			curr_joint.init_orientation = quaternion_between_two_directs(y_direct, init_direct);
+			curr_joint.orientation = curr_joint.init_orientation;
 			
 			// init T as identity.
 			curr_joint.rel_orientation = glm::fquat();	// relative orientation w.r.t. parent. Init as identity.
@@ -137,6 +138,29 @@ void Mesh::loadPmd(const std::string& fn)
 	}
 	// skeleton.calculate_bone_transforms();
 }
+
+void Mesh::deform(const int bone_index, const glm::fquat& rotate_quat) {
+	Joint& curr_joint = skeleton.joints[bone_index];
+	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
+
+	curr_joint.rel_orientation = rotate_quat * curr_joint.rel_orientation;
+
+	curr_joint.position = parent_joint.position + curr_joint.rel_orientation * (curr_joint.init_position - parent_joint.init_position);
+
+	curr_joint.orientation = rotate_quat * curr_joint.orientation;
+
+	for(int child_index : curr_joint.children) {
+		deform(child_index, rotate_quat);
+	}
+
+}
+
+// void Mesh::update_children() {
+// 	for(int child_index : parent_joint.children) {
+// 		Joint& child_joint = skeleton.joints[child_joint];
+// 		child_joint.position = 
+// 	}
+// }
 
 void Mesh::updateAnimation()
 {

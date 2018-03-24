@@ -56,7 +56,7 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 			roll_speed = -roll_speed_;
 		else
 			roll_speed = roll_speed_;
-		// FIXME: actually roll the bone here
+		// FIXME: actually roll the bone here             
 	} else if (key == GLFW_KEY_C && action != GLFW_RELEASE) {
 		fps_mode_ = !fps_mode_;
 	} else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_RELEASE) {
@@ -101,7 +101,29 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 		up_ = glm::column(orientation_, 1);
 		look_ = glm::column(orientation_, 2);
 	} else if (drag_bone && current_bone_ != -1) {
+		// std::cout << "dragging mouse!" << std::endl;
 		// FIXME: Handle bone rotation
+	
+		int parent_index = mesh_->skeleton.joints[current_bone_].parent_index;
+		glm::vec3 parent_joint_pos = mesh_->getJointPosition(parent_index);
+		glm::vec3 projected_parent_pos = glm::project(parent_joint_pos,
+											view_matrix_,
+											projection_matrix_,
+											viewport);
+
+		// glm::vec2 start_direct_2D(projected_joint_pos.x - projected_parent_pos.x, projected_joint_pos.y - projected_parent_pos.y);
+		glm::vec2 start_direct_2D(last_x_ - projected_parent_pos.x, last_y_ - projected_parent_pos.y);
+		glm::vec2 end_direct_2D(current_x_ - projected_parent_pos.x, current_y_ - projected_parent_pos.y);
+		float angle_2D = angle_between_two_directs_2D(start_direct_2D, end_direct_2D);
+		// std::cout << "dragging angle: " << angle_2D << std::endl;
+
+		glm::vec3 rotate_axis = glm::normalize(parent_joint_pos - eye_);
+		// use radians because GLM_FORCE_RADIANS is set. See: https://glm.g-truc.net/0.9.4/api/a00153.html#ga30071b5b9773087b7212a5ce67d0d90a
+		glm::fquat rotate_quat = glm::angleAxis(angle_2D, rotate_axis);
+		mesh_->deform(current_bone_, rotate_quat);
+		setPoseDirty();
+		// std::cout << "2-D coords of bone " << current_bone_ << ": " << projected_joint_pos.x 
+		// 	<< ", " << projected_joint_pos.y << std::endl;
 		return ;
 	}
 
@@ -128,7 +150,9 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 			current_bone_ = i;
 		}
 	}
-	std::cout << "current bone: " << current_bone_ << std::endl;
+
+	
+	// std::cout << "current bone: " << current_bone_ << std::endl;
 	
 }
 

@@ -24,3 +24,12 @@ I spents about 4 hours to finally figure out the use of the attributes in Joints
 
 - glm::rel_orientation: the rotation made by deforms(actually the T in formulas). Use it to calculate orientation and position. Initialized as identity.
 
+
+Finished drawing cylinders for bones. Next: do dragging control. How to calculate the quaternion of dragging? Problem: the mouse x, y coordinates are 2-D, but we need a 3-D rotation.
+- Solution1: rotate in the plane perpendicular to the ray shooting from eye_ to the joint. 
+	-- How compute angle? 
+	Try1: project position to 2-D. Calculate the rotation angle theta in 2D. Rotate the joint in 3-D about eye_-joint ray by theta. 
+
+- Solution2: Actually by unProjecting we can get 3-D coords of mouse position. So we can just use two directs to compute coords.
+
+

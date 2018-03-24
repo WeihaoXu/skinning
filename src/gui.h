@@ -37,6 +37,7 @@ public:
 	const glm::vec3& getCamera() const { return eye_; }
 	bool isPoseDirty() const { return pose_changed_; }
 	void clearPose() { pose_changed_ = false; }
+	void setPoseDirty() {pose_changed_ = true;}
 	const float* getLightPositionPtr() const { return &light_position_[0]; }
 	
 	int getCurrentBone() const { return current_bone_; }

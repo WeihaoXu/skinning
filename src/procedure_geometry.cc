@@ -193,6 +193,17 @@ glm::fquat quaternion_between_two_directs(glm::vec3 start, glm::vec3 dest){
 
 }
 
+float angle_between_two_directs_2D(glm::vec2 direct1, glm::vec2 direct2) {
+	direct1 = glm::normalize(direct1);
+	direct2 = glm::normalize(direct2);
+	float theta = glm::acos(glm::dot(direct1, direct2));
+	float angle_direct = direct1.x * direct2.y - direct1.y * direct2.x;	// cross product, determine rot direct
+	if(angle_direct < 0) {
+		return theta;
+	}
+	return -theta;
+
+}
 
 void printMat4(const glm::mat4& mat) {
 	for(int i = 0; i < 4; i++) {

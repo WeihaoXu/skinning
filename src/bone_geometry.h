@@ -39,6 +39,7 @@ struct Joint {
 	glm::fquat orientation;         // rotation w.r.t. initial configuration
 	glm::fquat rel_orientation;     // rotation w.r.t. it's parent. Note: it's not necessary to align the local coord sys. with the bone direction. So it could be initialized as identity.
 	glm::vec3 init_position;        // initial position of this joint
+	glm::fquat init_orientation;
 	std::vector<int> children;
 };
 
@@ -91,6 +92,7 @@ struct Mesh {
 	glm::vec3 getCenter() const { return 0.5f * glm::vec3(bounds.min + bounds.max); }
 
 	glm::vec3 getJointPosition(int joint_index) const;
+	void deform(const int bone_index, const glm::fquat& rotate_quat);	// rotate a bone and recompute all children's data
 
 private:
 	void computeBounds();
