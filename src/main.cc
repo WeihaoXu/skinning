@@ -205,9 +205,17 @@ int main(int argc, char* argv[])
 	// FIXME: add more lambdas for data_source if you want to use RenderPass.
 	//        Otherwise, do whatever you like here
 	glm::mat4 bone_transform_matrix;
-	auto bone_transform_data = [&mesh, &bone_transform_matrix]() -> const void* {
-		bone_transform_matrix = mesh.skeleton.getBoneTransform();	
+	auto bone_transform_data = [&mesh, &bone_transform_matrix, &gui]() -> const void* {
+		int current_bone = gui.getCurrentBone();
+		if(current_bone != -1) {
+			bone_transform_matrix = mesh.skeleton.getBoneTransform(current_bone);	
+		}
+		else {
+			bone_transform_matrix = mesh.skeleton.getBoneTransform(0);	// won't be used anyway
+		}
+		printMat4(bone_transform_matrix);
 		return &bone_transform_matrix[0][0];
+		
 	};
 	auto cylinder_radius_data = [&kCylinderRadius]() -> const void* {
 		return &kCylinderRadius;

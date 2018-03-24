@@ -1,6 +1,7 @@
 #include "procedure_geometry.h"
 #include "bone_geometry.h"
 #include "config.h"
+#include <iostream>
 
 void create_floor(std::vector<glm::vec4>& floor_vertices, std::vector<glm::uvec3>& floor_faces)
 {
@@ -141,4 +142,26 @@ float line_segment_distance(const glm::vec3& line1_start, const glm::vec3& line1
 
     return glm::length(dP);   // return the closest distance
 
+}
+
+// find the quaternion transform one direction into another.
+// ref: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
+glm::fquat quaternion_between_two_directs(const glm::vec3& direct1, const glm::vec3& direct2) {
+	glm::vec3 unit_dir1 = glm::normalize(direct1);
+	glm::vec3 unit_dir2 = glm::normalize(direct2);
+	glm::vec3 xyz = glm::cross(unit_dir1, unit_dir2);
+	int w = std::sqrt(2) + glm::dot(unit_dir1, unit_dir2);
+	glm::fquat result(w, xyz.x, xyz.y, xyz.z);
+	result = glm::normalize(result);
+	return result;
+}
+
+void printMat4(const glm::mat4& mat) {
+	for(int i = 0; i < 4; i++) {
+		for(int j = 0; j < 4; j++) {
+			std::cout << mat[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 }

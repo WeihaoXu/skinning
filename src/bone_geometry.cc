@@ -1,5 +1,6 @@
 #include "config.h"
 #include "bone_geometry.h"
+#include "procedure_geometry.h"
 #include <fstream>
 #include <queue>
 #include <iostream>
@@ -49,11 +50,45 @@ const glm::fquat* Skeleton::collectJointRot() const
 	return joint_rot.data();
 }
 
-// my implementation for getting bone transform matrix:
-const glm::mat4 Skeleton::getBoneTransform() const
-{
-	return bone_transforms[0];	// for tmp test use
+
+// calculate bone_transform_mats that transform cylinders to bones
+void Skeleton::calculate_bone_transforms() {
+	bone_transforms.clear();
+	glm::mat4 curr_transform;
+	for(int i = 0; i < joints.size(); i++) {
+		int parent_index = joints[i].parent_index;
+		glm::vec3 translate;
+		// glm::mat4 translate;
+		float length = 0;
+		if(parent_index == -1) {	// root
+			// translate = glm::translate(glm::vec3(0.0, 0.0, 0.0));	// whatever. A root joints doesn't refer to any bones
+			translate = glm::vec3(0.0f, 0.0f, 0.0f);
+			length = 10;
+		}
+		else {
+			translate = glm::vec3(0.0f, 1.0f, 0.0f);	// for debug
+			// translate = glm::translate(glm::vec3(0.0, 1.0, 0.0));	// for debug
+			// translate = (joints[i].position + joints[parent_index].position) * 0.5f;
+			std::cout << "bone center: (" << translate.x << ", " << translate.y << ", " << translate.z << ")" << std::endl;	// lengths are normal
+			length =  glm::length(joints[i].position - joints[parent_index].position);
+			std::cout << "length of joint " << i << ": " << length << std::endl;	// lengths are normal
+		}
+		// curr_transform = glm::scale(curr_transform, glm::vec3(1.0, length, 1.0));
+		// curr_transform =  glm::toMat4(joints[i].orientation) * curr_transform;	// rotate cylinder
+
+		curr_transform = glm::translate(curr_transform, translate.x, translate.y, translate.z);
+		// curr_transform = translate * curr_transform;
+		bone_transforms.push_back(curr_transform);
+	}
 }
+
+
+// my implementation for getting bone transform matrix:
+const glm::mat4 Skeleton::getBoneTransform(int joint_index) const
+{
+	return bone_transforms[joint_index];
+}
+
 
 Mesh::Mesh()
 {
@@ -95,33 +130,27 @@ void Mesh::loadPmd(const std::string& fn)
 	for(int i = 0; i < skeleton.joints.size(); i++) {
 		Joint& curr_joint = skeleton.joints[i];
 		if(curr_joint.parent_index == -1) {	// this is a root jonit
-			curr_joint.orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// identity.
-			curr_joint.rel_orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// identity.
+			curr_joint.orientation = glm::fquat();	// identity.
+			curr_joint.rel_orientation = glm::fquat();	// identity.
 			// std::cout << "root joint" << std::endl;
 		}
 		else {
 			Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
-			glm::vec3 x_direct(1.0, 0.0, 0.0);
-			glm::vec3 init_direct = glm::normalize(curr_joint.init_position - parent_joint.init_position);
-			// curr_joint.orientation.xyz = glm::cross(y_direct, init_direct);
-			// curr_joint.orientation.w = std::sqrt(std::pow(glm::length(y_direct), 2) + std::pow(glm::length(init_direct), 2))
-			// 								+ glm::dot(y_direct, init_direct);
-			glm::vec3 xyz = glm::cross(x_direct, init_direct);
-			int w = std::sqrt(2) + glm::dot(x_direct, init_direct);;
-			curr_joint.orientation.x = xyz.x;
-			curr_joint.orientation.y = xyz.y;
-			curr_joint.orientation.z = xyz.z;
-			curr_joint.orientation.w = w;
-			curr_joint.orientation = glm::normalize(curr_joint.orientation);
+			// calculate orientation w.r.t. y axis.
+			glm::vec3 y_direct(0.0, 1.0, 0.0);
+			glm::vec3 init_direct = curr_joint.init_position - parent_joint.init_position;
+			curr_joint.orientation = quaternion_between_two_directs(y_direct, init_direct);
+			
+			// init T as identity.
+			curr_joint.rel_orientation = glm::fquat();	// relative orientation w.r.t. parent. Init as identity.
 
-			curr_joint.rel_orientation = glm::fquat(1.0, 0.0, 0.0, 0.0);	// relative orientation w.r.t. parent. Init as identity.
-
+			// insert current joint into parent's children list
 			parent_joint.children.push_back(curr_joint.joint_index);
 			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
 		}
-		skeleton.bone_transforms.push_back(glm::mat4(1.0));
+		// skeleton.bone_transforms.push_back(glm::mat4(1.0));	// for tmp use
 	}
-
+	skeleton.calculate_bone_transforms();
 }
 
 void Mesh::updateAnimation()

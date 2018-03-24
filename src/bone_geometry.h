@@ -50,16 +50,18 @@ struct LineMesh {
 struct Skeleton {
 	std::vector<Joint> joints;
 
-	std::vector<glm::vec3> joint_trans; // cache for uniforms
-	std::vector<glm::fquat> joint_rot; // cache for uniforms
+	std::vector<glm::vec3> joint_trans; // cache for uniforms	// position
+	std::vector<glm::fquat> joint_rot; // cache for uniforms	// orientation
 
 	void refreshCache();
 	const glm::vec3* collectJointTrans() const;
 	const glm::fquat* collectJointRot() const;
 
 	// FIXME: create skeleton and bone data structures
-	std::vector<glm::mat4> bone_transforms;	// translate, 
-	const glm::mat4 getBoneTransform() const;
+	std::vector<glm::mat4> bone_transforms;	
+	void calculate_bone_transforms();
+	const glm::mat4 getBoneTransform(int joint_index) const;
+
 };
 
 struct Mesh {

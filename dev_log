@@ -15,3 +15,12 @@ successfully made use of geometry shader to draw "cylinders". (not really cylind
 Spent one hour to debug: pass transform matrix into cylinder shader. Problem: in the lambda for bone_transform_data, returned the pointer of a temporary matrix, which expires once outside the scope!!!
 
 
+I spents about 4 hours to finally figure out the use of the attributes in Joints class. The key is the formular in slides and the tutorial in homework page. 
+- glm::vec3 position: the position of current joint in world coordidates. It is passed into shaders. We need to keep it updated whenever the pose is touched. How? recursively Di * Bij(based on init positions) * T(manually deforms) * (local coords (calculated with current orientations).)
+
+- glm::vec3 init_position: the init position loaded from pmd files. We can use the init_position of two jions to calculate the translation between the coords of two joints. Keep in mind that this translation will never change.
+
+- glm::orientation: basically the direction from parent's position to current_joint's position. Use it to rotate our cylinder. We need to keep it updated during deforms.
+
+- glm::rel_orientation: the rotation made by deforms(actually the T in formulas). Use it to calculate orientation and position. Initialized as identity.
+
