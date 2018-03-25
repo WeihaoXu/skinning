@@ -57,7 +57,7 @@ const glm::fquat* Skeleton::collectJointRot() const
 // remember that every bone is pointing from parent to child!
 const glm::mat4 Skeleton::getBoneTransform(int joint_index) const
 {
-	// return bone_transforms[joint_index];
+	
 	const Joint& curr_joint = joints[joint_index];
 	const Joint& parent_joint = joints[curr_joint.parent_index];
 
@@ -110,6 +110,10 @@ void Mesh::loadPmd(const std::string& fn)
 			break;
 		}
 	}
+
+	skeleton.d_matrices.resize(skeleton.joints.size());
+	skeleton.u_matrices.resize(skeleton.joints.size());
+
 	// init orientation, rel_orientation and children list.
 	// computation of orientation: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
 	for(int i = 0; i < skeleton.joints.size(); i++) {
@@ -117,6 +121,8 @@ void Mesh::loadPmd(const std::string& fn)
 		if(curr_joint.parent_index == -1) {	// this is a root jonit
 			curr_joint.orientation = glm::fquat();	// identity.
 			curr_joint.rel_orientation = glm::fquat();	// identity.
+			skeleton.u_matrices[i] = glm::translate(glm::mat4(1.0), curr_joint.init_position);
+			skeleton.d_matrices[i] = skeleton.u_matrices[i] * glm::toMat4(curr_joint.rel_orientation);
 			// std::cout << "root joint" << std::endl;
 		}
 		else {
@@ -130,6 +136,9 @@ void Mesh::loadPmd(const std::string& fn)
 			// init T as identity.
 			curr_joint.rel_orientation = glm::fquat();	// relative orientation w.r.t. parent. Init as identity.
 
+			skeleton.u_matrices[i] = glm::translate(glm::mat4(1.0), curr_joint.init_position - parent_joint.init_position);
+			skeleton.d_matrices[i] = glm::toMat4(curr_joint.rel_orientation) * skeleton.u_matrices[i];
+
 			// insert current joint into parent's children list
 			parent_joint.children.push_back(curr_joint.joint_index);
 			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
@@ -141,26 +150,40 @@ void Mesh::loadPmd(const std::string& fn)
 
 void Mesh::deform(const int bone_index, const glm::fquat& rotate_quat) {
 	Joint& curr_joint = skeleton.joints[bone_index];
-	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
-
+	// std::cout << "position before rotation: " << curr_joint.position << std::endl;
 	curr_joint.rel_orientation = rotate_quat * curr_joint.rel_orientation;
+	// std::cout << "orientation quaternion: " << curr_joint.rel_orientation << std::endl;
 
-	curr_joint.position = parent_joint.position + curr_joint.rel_orientation * (curr_joint.init_position - parent_joint.init_position);
+	skeleton.d_matrices[bone_index] = glm::toMat4(curr_joint.rel_orientation) * skeleton.u_matrices[bone_index];
 
-	curr_joint.orientation = rotate_quat * curr_joint.orientation;
-
-	for(int child_index : curr_joint.children) {
-		deform(child_index, rotate_quat);
-	}
-
+	downward_update_bones(bone_index);
+	
 }
 
-// void Mesh::update_children() {
-// 	for(int child_index : parent_joint.children) {
-// 		Joint& child_joint = skeleton.joints[child_joint];
-// 		child_joint.position = 
-// 	}
-// }
+void Mesh::downward_update_bones(int bone_index) {
+	Joint& curr_joint = skeleton.joints[bone_index];
+	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
+	curr_joint.position = compute_joint_world_position(bone_index);
+	curr_joint.orientation = quaternion_between_two_directs(glm::vec3(0.0, 1.0, 0.0), curr_joint.position - parent_joint.position);
+	for(int child_index : curr_joint.children) {
+		downward_update_bones(child_index);
+	}
+}
+
+
+glm::vec3 Mesh::compute_joint_world_position(int bone_index) {
+	glm::vec4 position(0.0, 0.0, 0.0, 1.0);
+	while(bone_index != -1) {
+		// std::cout << "backtrack bone " << bone_index << std::endl;
+		// std::cout << "transform by matrix: " << skeleton.d_matrices[bone_index] << std::endl;
+		position = skeleton.d_matrices[bone_index] * position;
+		bone_index = skeleton.joints[bone_index].parent_index;
+	}
+	// std::cout << "position after rotation: " << position << std::endl;
+	return glm::vec3(position.x, position.y, position.z);
+}
+
+
 
 void Mesh::updateAnimation()
 {

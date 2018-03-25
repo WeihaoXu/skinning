@@ -60,6 +60,9 @@ struct Skeleton {
 
 	// FIXME: create skeleton and bone data structures
 	std::vector<glm::mat4> bone_transforms;	
+	std::vector<glm::mat4> d_matrices;
+	std::vector<glm::mat4> u_matrices;
+
 	// void calculate_bone_transforms();
 	const glm::mat4 getBoneTransform(int joint_index) const;
 
@@ -93,6 +96,8 @@ struct Mesh {
 
 	glm::vec3 getJointPosition(int joint_index) const;
 	void deform(const int bone_index, const glm::fquat& rotate_quat);	// rotate a bone and recompute all children's data
+	glm::vec3 compute_joint_world_position(int bone_index);
+	void downward_update_bones(int bone_index);
 
 private:
 	void computeBounds();
