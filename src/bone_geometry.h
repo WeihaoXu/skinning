@@ -39,7 +39,7 @@ struct Joint {
 	glm::fquat orientation;         // rotation w.r.t. initial configuration
 	glm::fquat rel_orientation;     // rotation w.r.t. it's parent. Note: it's not necessary to align the local coord sys. with the bone direction. So it could be initialized as identity.
 	glm::vec3 init_position;        // initial position of this joint
-	glm::fquat init_orientation;
+	glm::vec3 init_offset;
 	std::vector<int> children;
 };
 

@@ -104,7 +104,7 @@ void Mesh::loadPmd(const std::string& fn)
 			Joint curr_joint(jointId, wcoord, parentId);
 			skeleton.joints.push_back(curr_joint);
 			jointId++;
-			std::cout << "join " << jointId << ": (" << wcoord.x << ", " << wcoord.y << ", " << wcoord.z << ")" << std::endl;
+			// std::cout << "join " << jointId << ": (" << wcoord.x << ", " << wcoord.y << ", " << wcoord.z << ")" << std::endl;
 		}
 		else {
 			break;
@@ -118,33 +118,30 @@ void Mesh::loadPmd(const std::string& fn)
 	// computation of orientation: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
 	for(int i = 0; i < skeleton.joints.size(); i++) {
 		Joint& curr_joint = skeleton.joints[i];
-		if(curr_joint.parent_index == -1) {	// this is a root jonit
-			curr_joint.orientation = glm::fquat();	// identity.
+		int parent_index = curr_joint.parent_index;
+		glm::vec3 y_direct(0.0, 1.0, 0.0);
+		if(parent_index == -1) {	// this is a root jonit
 			curr_joint.rel_orientation = glm::fquat();	// identity.
-			skeleton.u_matrices[i] = glm::translate(glm::mat4(1.0), curr_joint.init_position);
-			skeleton.d_matrices[i] = skeleton.u_matrices[i] * glm::toMat4(curr_joint.rel_orientation);
+			curr_joint.init_offset = curr_joint.position;
+			curr_joint.orientation = quaternion_between_two_directs(y_direct, curr_joint.init_offset);
 			// std::cout << "root joint" << std::endl;
 		}
 		else {
 			Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
-			// calculate orientation w.r.t. y axis.
-			glm::vec3 y_direct(0.0, 1.0, 0.0);
-			glm::vec3 init_direct = curr_joint.init_position - parent_joint.init_position;
-			curr_joint.init_orientation = quaternion_between_two_directs(y_direct, init_direct);
-			curr_joint.orientation = curr_joint.init_orientation;
-			
-			// init T as identity.
+			curr_joint.init_offset = curr_joint.init_position - parent_joint.init_position;
+			curr_joint.orientation = quaternion_between_two_directs(y_direct, curr_joint.init_offset);
 			curr_joint.rel_orientation = glm::fquat();	// relative orientation w.r.t. parent. Init as identity.
-
-			skeleton.u_matrices[i] = glm::translate(glm::mat4(1.0), curr_joint.init_position - parent_joint.init_position);
-			skeleton.d_matrices[i] = glm::toMat4(curr_joint.rel_orientation) * skeleton.u_matrices[i];
-
-			// insert current joint into parent's children list
 			parent_joint.children.push_back(curr_joint.joint_index);
 			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
 		}
 		// skeleton.bone_transforms.push_back(glm::mat4(1.0));	// for tmp use
 	}
+	// initialize U and D
+	for(int i = 0; i < skeleton.joints.size(); i++) {
+		
+	}
+
+
 	// skeleton.calculate_bone_transforms();
 }
 
