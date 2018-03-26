@@ -157,7 +157,7 @@ void Mesh::loadPmd(const std::string& fn)
 	updateAnimation();
 }
 
-void Mesh::deform(const int bone_index, const glm::fquat& rotate_quat) {
+void Mesh::rotate_bone(const int bone_index, const glm::fquat& rotate_quat) {
 	Joint& curr_joint = skeleton.joints[bone_index];
 	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
 
@@ -167,7 +167,6 @@ void Mesh::deform(const int bone_index, const glm::fquat& rotate_quat) {
 }
 
 
-
 void Mesh::update_children(Joint& parent_joint, const glm::fquat& rotate_quat) {
 	for(int child_index : parent_joint.children) {
 		Joint& child_joint = skeleton.joints[child_index];
@@ -175,6 +174,12 @@ void Mesh::update_children(Joint& parent_joint, const glm::fquat& rotate_quat) {
 		child_joint.position = parent_joint.position + parent_joint.rel_orientation * (child_joint.init_position - parent_joint.init_position);
 		
 		update_children(child_joint, rotate_quat);
+	}
+}
+
+void Mesh::translate_root(glm::vec3 offset) {
+	for(Joint& joint : skeleton.joints) {
+		joint.position = joint.position + offset;
 	}
 }
 

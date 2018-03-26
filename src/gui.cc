@@ -68,7 +68,7 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 		glm::vec3 parent_joint_pos = mesh_->getJointPosition(curr_joint.parent_index);
 		glm::vec3 rotate_axis = glm::normalize(curr_joint_pos - parent_joint_pos);
 		glm::fquat rotate_quat = glm::angleAxis(roll_speed, rotate_axis);
-		mesh_->deform(current_bone_, rotate_quat);
+		mesh_->rotate_bone(current_bone_, rotate_quat);
 		setPoseDirty();
 
 
@@ -105,6 +105,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 
 	bool drag_camera = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_RIGHT;
 	bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
+	bool translate_root_mode = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_MIDDLE;
 
 	if (drag_camera) {
 		glm::vec3 axis = glm::normalize(
@@ -136,11 +137,31 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 		glm::vec3 rotate_axis = glm::normalize(parent_joint_pos - eye_);
 		// use radians because GLM_FORCE_RADIANS is set. See: https://glm.g-truc.net/0.9.4/api/a00153.html#ga30071b5b9773087b7212a5ce67d0d90a
 		glm::fquat rotate_quat = glm::angleAxis(angle_2D, rotate_axis);
-		mesh_->deform(current_bone_, rotate_quat);
+		mesh_->rotate_bone(current_bone_, rotate_quat);
 		setPoseDirty();
 		// std::cout << "2-D coords of bone " << current_bone_ << ": " << projected_joint_pos.x 
 		// 	<< ", " << projected_joint_pos.y << std::endl;
 		return ;
+	} else if(translate_root_mode && current_bone_ != -1) {
+		int parent_index = mesh_->skeleton.joints[current_bone_].parent_index;
+		glm::vec3 parent_joint_pos = mesh_->getJointPosition(parent_index);
+		glm::vec3 projected_parent_pos = glm::project(parent_joint_pos,
+											view_matrix_,
+											projection_matrix_,
+											viewport);
+		float projected_depth = projected_parent_pos[2];
+		glm::vec3 cursor_pos_3d_0 = glm::unProject(glm::vec3(last_x_, last_y_, projected_depth),
+											view_matrix_,
+											projection_matrix_,
+											viewport);
+		glm::vec3 cursor_pos_3d_1 = glm::unProject(glm::vec3(current_x_, current_y_, projected_depth),
+									view_matrix_,
+									projection_matrix_,
+									viewport);
+		glm::vec3 offset = cursor_pos_3d_1 - cursor_pos_3d_0;
+		mesh_->translate_root(offset);
+		std::cout << "translating root: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+		setPoseDirty();
 	}
 
 	// FIXME: highlight bones that have been moused over
