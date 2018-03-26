@@ -9,6 +9,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+
 namespace {
 	// FIXME: Implement a function that performs proper
 	//        ray-cylinder intersection detection
@@ -46,6 +47,11 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 	}
 	if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
 		//FIXME save out a screenshot using SaveJPEG
+		unsigned char* pixmap = (unsigned char*) malloc (sizeof(char) * window_width_ * window_height_ * 3);
+		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+		glReadPixels(0, 0, window_width_, window_height_, GL_RGB, GL_UNSIGNED_BYTE, pixmap);
+		SaveJPEG("screenshot.jpg", window_width_, window_height_, pixmap);
+		std::cout << "done screenshot" << std::endl;	
 	}
 
 	if (captureWASDUPDOWN(key, action))
