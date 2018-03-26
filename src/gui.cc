@@ -51,12 +51,22 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 	if (captureWASDUPDOWN(key, action))
 		return ;
 	if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
-		float roll_speed;
+		float roll_speed = 0.2;
 		if (key == GLFW_KEY_RIGHT)
 			roll_speed = -roll_speed_;
 		else
 			roll_speed = roll_speed_;
-		// FIXME: actually roll the bone here             
+		// FIXME: actually roll the bone here
+		Joint& curr_joint = mesh_->skeleton.joints[current_bone_];
+		glm::vec3 curr_joint_pos = mesh_->getJointPosition(curr_joint.joint_index);
+		glm::vec3 parent_joint_pos = mesh_->getJointPosition(curr_joint.parent_index);
+		glm::vec3 rotate_axis = glm::normalize(curr_joint_pos - parent_joint_pos);
+		glm::fquat rotate_quat = glm::angleAxis(roll_speed, rotate_axis);
+		mesh_->deform(current_bone_, rotate_quat);
+		setPoseDirty();
+
+
+
 	} else if (key == GLFW_KEY_C && action != GLFW_RELEASE) {
 		fps_mode_ = !fps_mode_;
 	} else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_RELEASE) {
