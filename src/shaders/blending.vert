@@ -26,7 +26,14 @@ vec3 qtransform(vec4 q, vec3 v) {
 
 void main() {
 	// FIXME: Implement linear skinning here
-	gl_Position = vert;
+	
+	vec3 position0 = qtransform(joint_rot[jid0], vector_from_joint0) + joint_trans[jid0];
+	vec3 position1 = qtransform(joint_rot[jid1], vector_from_joint1) + joint_trans[jid1];
+	
+	gl_Position = vec4(w0 * position0 + (1.0 - w0) * position1, 1.0);
+
+
+	//gl_Position = vert;
 	vs_normal = normal;
 	vs_light_direction = light_position - gl_Position;
 	vs_camera_direction = vec4(camera_position, 1.0) - gl_Position;

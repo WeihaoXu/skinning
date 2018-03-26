@@ -36,7 +36,8 @@ void Skeleton::refreshCache()
 	joint_rot.resize(joints.size());
 	joint_trans.resize(joints.size());
 	for (size_t i = 0; i < joints.size(); i++) {
-		joint_rot[i] = joints[i].orientation;
+		joint_rot[i] = joints[i].rel_orientation;
+		// joint_rot[i] = joints[i].orientation;
 		joint_trans[i] = joints[i].position;
 	}
 }
@@ -64,7 +65,8 @@ const glm::mat4 Skeleton::getBoneTransform(int joint_index) const
 	float length = glm::length(curr_joint.position - parent_joint.position);
 	glm::mat4 scale_matrix = glm::scale(glm::mat4(1.0), glm::vec3(1.0, length, 1.0));
 
-	glm::mat4 rotate_matrix = glm::toMat4(curr_joint.orientation);
+	glm::fquat rotate_quat = quaternion_between_two_directs(glm::vec3(0.0, 1.0, 0.0), curr_joint.position - parent_joint.position);
+	glm::mat4 rotate_matrix = glm::toMat4(rotate_quat);
 
 	glm::vec3 translate = parent_joint.position;
 	glm::mat4 translate_matrix = glm::translate(glm::mat4(1.0f), translate);
@@ -94,6 +96,8 @@ void Mesh::loadPmd(const std::string& fn)
 	// FIXME: load skeleton and blend weights from PMD file,
 	//        initialize std::vectors for the vertex attributes,
 	//        also initialize the skeleton as needed
+
+
 
 	// read in joint data.
 	int jointId = 0;
@@ -136,36 +140,50 @@ void Mesh::loadPmd(const std::string& fn)
 		}
 		// skeleton.bone_transforms.push_back(glm::mat4(1.0));	// for tmp use
 	}
-	// skeleton.calculate_bone_transforms();
+
+	// load wieghts
+	std::vector<SparseTuple> sparse_tuples;
+	mr.getJointWeights(sparse_tuples);
+
+	for(SparseTuple& tuple : sparse_tuples) {
+		int vid = tuple.vid;
+		joint0.push_back(tuple.jid0);
+		joint1.push_back(tuple.jid1);
+		weight_for_joint0.push_back(tuple.weight0);
+		vector_from_joint0.push_back(glm::vec3(vertices[vid]) - skeleton.joints[tuple.jid0].position);
+		vector_from_joint1.push_back(glm::vec3(vertices[vid]) - skeleton.joints[tuple.jid1].position);
+	}
+
+	updateAnimation();
 }
 
 void Mesh::deform(const int bone_index, const glm::fquat& rotate_quat) {
 	Joint& curr_joint = skeleton.joints[bone_index];
 	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
 
-	curr_joint.rel_orientation = rotate_quat * curr_joint.rel_orientation;
+	parent_joint.rel_orientation = rotate_quat * parent_joint.rel_orientation;
 
-	curr_joint.position = parent_joint.position + curr_joint.rel_orientation * (curr_joint.init_position - parent_joint.init_position);
-
-	curr_joint.orientation = rotate_quat * curr_joint.orientation;
-
-	for(int child_index : curr_joint.children) {
-		deform(child_index, rotate_quat);
-	}
-
+	update_children(parent_joint, rotate_quat);
 }
 
-// void Mesh::update_children() {
-// 	for(int child_index : parent_joint.children) {
-// 		Joint& child_joint = skeleton.joints[child_joint];
-// 		child_joint.position = 
-// 	}
-// }
+
+
+void Mesh::update_children(Joint& parent_joint, const glm::fquat& rotate_quat) {
+	for(int child_index : parent_joint.children) {
+		Joint& child_joint = skeleton.joints[child_index];
+		child_joint.rel_orientation = rotate_quat * child_joint.rel_orientation;
+		child_joint.position = parent_joint.position + parent_joint.rel_orientation * (child_joint.init_position - parent_joint.init_position);
+		
+		update_children(child_joint, rotate_quat);
+	}
+}
 
 void Mesh::updateAnimation()
 {
 	skeleton.refreshCache();
+	
 }
+
 
 int Mesh::getNumberOfBones() const
 {

@@ -93,6 +93,9 @@ struct Mesh {
 
 	glm::vec3 getJointPosition(int joint_index) const;
 	void deform(const int bone_index, const glm::fquat& rotate_quat);	// rotate a bone and recompute all children's data
+	
+	void collect_children(const Joint& joint, std::vector<Joint*>& children);
+	void update_children(Joint& parent_joint, const glm::fquat& rotate_quat);
 
 private:
 	void computeBounds();
