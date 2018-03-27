@@ -148,10 +148,18 @@ void Mesh::loadPmd(const std::string& fn)
 	for(SparseTuple& tuple : sparse_tuples) {
 		int vid = tuple.vid;
 		joint0.push_back(tuple.jid0);
-		joint1.push_back(tuple.jid1);
 		weight_for_joint0.push_back(tuple.weight0);
 		vector_from_joint0.push_back(glm::vec3(vertices[vid]) - skeleton.joints[tuple.jid0].position);
-		vector_from_joint1.push_back(glm::vec3(vertices[vid]) - skeleton.joints[tuple.jid1].position);
+
+		if(tuple.jid1 == -1) {
+			joint1.push_back(0);	// avoid joints[-1] access
+			vector_from_joint1.push_back(glm::vec3(0.0, 0.0, 0.0));
+			std::cout << "joint1 equals -1" << std::endl;
+		}
+		else {
+			joint1.push_back(tuple.jid1);
+			vector_from_joint1.push_back(glm::vec3(vertices[vid]) - skeleton.joints[tuple.jid1].position);
+		}
 	}
 
 	updateAnimation();
@@ -160,9 +168,7 @@ void Mesh::loadPmd(const std::string& fn)
 void Mesh::rotate_bone(const int bone_index, const glm::fquat& rotate_quat) {
 	Joint& curr_joint = skeleton.joints[bone_index];
 	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
-
 	parent_joint.rel_orientation = rotate_quat * parent_joint.rel_orientation;
-
 	update_children(parent_joint, rotate_quat);
 }
 
@@ -172,7 +178,6 @@ void Mesh::update_children(Joint& parent_joint, const glm::fquat& rotate_quat) {
 		Joint& child_joint = skeleton.joints[child_index];
 		child_joint.rel_orientation = rotate_quat * child_joint.rel_orientation;
 		child_joint.position = parent_joint.position + parent_joint.rel_orientation * (child_joint.init_position - parent_joint.init_position);
-		
 		update_children(child_joint, rotate_quat);
 	}
 }
@@ -181,6 +186,15 @@ void Mesh::translate_root(glm::vec3 offset) {
 	for(Joint& joint : skeleton.joints) {
 		joint.position = joint.position + offset;
 	}
+}
+
+
+void Mesh::savePose(const std::string& pose_file) {
+
+}
+
+void Mesh::loadPose(const std::string& pose_file) {
+
 }
 
 void Mesh::updateAnimation()
@@ -209,4 +223,6 @@ void Mesh::computeBounds()
 		bounds.max = glm::max(glm::vec3(vert), bounds.max);
 	}
 }
+
+
 

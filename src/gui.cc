@@ -63,13 +63,16 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 		else
 			roll_speed = roll_speed_;
 		// FIXME: actually roll the bone here
-		Joint& curr_joint = mesh_->skeleton.joints[current_bone_];
-		glm::vec3 curr_joint_pos = mesh_->getJointPosition(curr_joint.joint_index);
-		glm::vec3 parent_joint_pos = mesh_->getJointPosition(curr_joint.parent_index);
-		glm::vec3 rotate_axis = glm::normalize(curr_joint_pos - parent_joint_pos);
-		glm::fquat rotate_quat = glm::angleAxis(roll_speed, rotate_axis);
-		mesh_->rotate_bone(current_bone_, rotate_quat);
-		setPoseDirty();
+		if(current_bone_ != -1) {
+			Joint& curr_joint = mesh_->skeleton.joints[current_bone_];
+			glm::vec3 curr_joint_pos = mesh_->getJointPosition(curr_joint.joint_index);
+			glm::vec3 parent_joint_pos = mesh_->getJointPosition(curr_joint.parent_index);
+			glm::vec3 rotate_axis = glm::normalize(curr_joint_pos - parent_joint_pos);
+			glm::fquat rotate_quat = glm::angleAxis(roll_speed, rotate_axis);
+			mesh_->rotate_bone(current_bone_, rotate_quat);
+			setPoseDirty();
+		}
+		
 
 
 
