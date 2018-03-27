@@ -171,9 +171,12 @@ glm::fquat quaternion_between_two_directs(glm::vec3 start, glm::vec3 dest){
 		// special case when vectors in opposite directions:
 		// there is no "ideal" rotation axis
 		// So guess one; any will do as long as it's perpendicular to start
+		// std::cout << "shit happened" << std::endl;
 		rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
-		if (glm::length2(rotationAxis) < 0.01 ) // bad luck, they were parallel, try again!
+		if (glm::length2(rotationAxis) < 0.01 ) {// bad luck, they were parallel, try again! 
 			rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
+			std::cout << "back luck" << std::endl;
+		}
 
 		rotationAxis = glm::normalize(rotationAxis);
 		return glm::angleAxis(glm::radians(180.0f), rotationAxis);
@@ -181,7 +184,7 @@ glm::fquat quaternion_between_two_directs(glm::vec3 start, glm::vec3 dest){
 
 	rotationAxis = glm::cross(start, dest);
 
-	float s = sqrt( (1+cosTheta)*2 );
+	float s = sqrt( (1+cosTheta)*2 ) + 0.000001;
 	float invs = 1 / s;
 
 	return glm::fquat(
@@ -196,9 +199,12 @@ glm::fquat quaternion_between_two_directs(glm::vec3 start, glm::vec3 dest){
 float angle_between_two_directs_2D(glm::vec2 direct1, glm::vec2 direct2) {
 	direct1 = glm::normalize(direct1);
 	direct2 = glm::normalize(direct2);
-	float theta = glm::acos(glm::dot(direct1, direct2));
+	float cos_theta = glm::dot(direct1, direct2);
+	cos_theta = std::max(cos_theta, -1.0f + 0.00001f);
+	cos_theta = std::min(cos_theta, 1.0f - 0.00001f);
+	float theta = glm::acos(cos_theta);
 	float angle_direct = direct1.x * direct2.y - direct1.y * direct2.x;	// cross product, determine rot direct
-	if(angle_direct < 0) {
+	if(angle_direct < 0.0f - 0.001f) {
 		return theta;
 	}
 	return -theta;

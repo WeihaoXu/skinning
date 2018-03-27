@@ -200,6 +200,9 @@ int main(int argc, char* argv[])
 		return ret;
 	};
 	auto joint_rot_data = [&mesh]() -> const void* {
+		// for(int i = 0; i < mesh.getNumberOfBones(); i++) {
+		// 	std::cout << "bone " << i << ":" << mesh.skeleton.joint_rot[i] << std::endl;
+		// }
 		return mesh.skeleton.collectJointRot();
 	};
 	// FIXME: add more lambdas for data_source if you want to use RenderPass.

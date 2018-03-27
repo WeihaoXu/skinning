@@ -140,7 +140,14 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 		glm::vec3 rotate_axis = glm::normalize(parent_joint_pos - eye_);
 		// use radians because GLM_FORCE_RADIANS is set. See: https://glm.g-truc.net/0.9.4/api/a00153.html#ga30071b5b9773087b7212a5ce67d0d90a
 		glm::fquat rotate_quat = glm::angleAxis(angle_2D, rotate_axis);
+
+		glm::fquat& joint_rot = mesh_->skeleton.joint_rot[current_bone_];
 		mesh_->rotate_bone(current_bone_, rotate_quat);
+		// std::cout << "rotate bone: " << current_bone_ << ", by theta = " << angle_2D 
+		// 	<< ", quat: (" << rotate_quat[0] << "," << rotate_quat[1] << ", " << rotate_quat[2]  << ", " << rotate_quat[3] << ")" 
+		// 	<< ", curr orientation:  (" << joint_rot[0] << "," << joint_rot[1] << ", " << joint_rot[2]  << ", " << joint_rot[3] << ")"
+		// 	<< std::endl;
+
 		setPoseDirty();
 		// std::cout << "2-D coords of bone " << current_bone_ << ": " << projected_joint_pos.x 
 		// 	<< ", " << projected_joint_pos.y << std::endl;
@@ -163,7 +170,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 									viewport);
 		glm::vec3 offset = cursor_pos_3d_1 - cursor_pos_3d_0;
 		mesh_->translate_root(offset);
-		std::cout << "translating root: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+		// std::cout << "translating root: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
 		setPoseDirty();
 	}
 
