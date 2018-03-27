@@ -22,4 +22,6 @@ glm::fquat quaternion_between_two_directs(glm::vec3 from, glm::vec3 to);
 float angle_between_two_directs_2D(glm::vec2 direct1, glm::vec2 direct2);
 void printMat4(const glm::mat4& mat);
 
+std::vector<glm::fquat> dual_quat_from(const glm::fquat q, const glm::vec3 t);
+
 #endif

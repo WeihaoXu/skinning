@@ -35,10 +35,18 @@ void Skeleton::refreshCache()
 {
 	joint_rot.resize(joints.size());
 	joint_trans.resize(joints.size());
+	dual_quat_part0.resize(joints.size());
+	dual_quat_part1.resize(joints.size());
+
 	for (size_t i = 0; i < joints.size(); i++) {
 		joint_rot[i] = joints[i].rel_orientation;
 		// joint_rot[i] = joints[i].orientation;
 		joint_trans[i] = joints[i].position;
+
+		std::vector<glm::fquat> dual_quat = dual_quat_from(joint_rot[i], joint_trans[i]);
+		
+		dual_quat_part0[i] = dual_quat[0];
+		dual_quat_part1[i] = dual_quat[1];
 	}
 }
 
@@ -52,6 +60,15 @@ const glm::fquat* Skeleton::collectJointRot() const
 	return joint_rot.data();
 }
 
+const glm::fquat* Skeleton::collectDualQuatPart0() const 
+{
+	return dual_quat_part0.data();
+}
+
+const glm::fquat* Skeleton::collectDualQuatPart1() const 
+{
+	return dual_quat_part1.data();
+}
 
 
 // my implementation for getting bone transform matrix:
@@ -154,7 +171,7 @@ void Mesh::loadPmd(const std::string& fn)
 		if(tuple.jid1 == -1) {
 			joint1.push_back(0);	// avoid joints[-1] access
 			vector_from_joint1.push_back(glm::vec3(0.0, 0.0, 0.0));
-			std::cout << "joint1 equals -1" << std::endl;
+			// std::cout << "joint1 equals -1" << std::endl;
 		}
 		else {
 			joint1.push_back(tuple.jid1);
