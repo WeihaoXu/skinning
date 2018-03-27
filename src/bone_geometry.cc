@@ -44,9 +44,7 @@ void Skeleton::refreshCache()
 		joint_trans[i] = joints[i].position;
 
 		std::vector<glm::fquat> dual_quat = dual_quat_from(joint_rot[i], joint_trans[i]);
-		std::cout << "dual quat 0: " << dual_quat[0] << std::endl;
-		std::cout << "dual quat 1: " << dual_quat[1] << std::endl;
-
+		
 		dual_quat_part0[i] = dual_quat[0];
 		dual_quat_part1[i] = dual_quat[1];
 	}

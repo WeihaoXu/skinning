@@ -226,6 +226,6 @@ std::vector<glm::fquat> dual_quat_from(const glm::fquat q, const glm::vec3 t)
     float j =  0.5f*(-t.x * q.z + t.y * q.w + t.z * q.x);
     float k =  0.5f*( t.x * q.y - t.y * q.x + t.z * q.w);
 
-    res.push_back(glm::normalize(glm::fquat(w, i, j, k)));
+    res.push_back(glm::fquat(w, i, j, k));
     return res;
 }
