@@ -221,17 +221,4 @@ void printMat4(const glm::mat4& mat) {
 	std::cout << std::endl;
 }
 
-std::vector<glm::fquat> dual_quat_from(const glm::fquat q, const glm::vec3 t)
-{
-	std::vector<glm::fquat> res;
 
-	res.push_back(q);
-
-    float w = -0.5f*( t.x * q.x + t.y * q.y + t.z * q.z);
-    float i =  0.5f*( t.x * q.w + t.y * q.z - t.z * q.y);
-    float j =  0.5f*(-t.x * q.z + t.y * q.w + t.z * q.x);
-    float k =  0.5f*( t.x * q.y - t.y * q.x + t.z * q.w);
-
-    res.push_back(glm::fquat(w, i, j, k));
-    return res;
-}

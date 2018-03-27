@@ -54,15 +54,11 @@ struct Skeleton {
 	std::vector<glm::vec3> joint_trans; // cache for uniforms	// position
 	std::vector<glm::fquat> joint_rot; // cache for uniforms	// orientation
 
-	std::vector<glm::fquat> dual_quat_part0;
-	std::vector<glm::fquat> dual_quat_part1;
-
 	void refreshCache();
 	const glm::vec3* collectJointTrans() const;
 	const glm::fquat* collectJointRot() const;
 
-	const glm::fquat* collectDualQuatPart0() const;
-	const glm::fquat* collectDualQuatPart1() const;
+
 
 	// FIXME: create skeleton and bone data structures
 	std::vector<glm::mat4> bone_transforms;	

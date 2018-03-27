@@ -10,8 +10,7 @@ uniform vec3 camera_position;
 uniform vec3 joint_trans[128];
 uniform vec4 joint_rot[128];
 
-uniform vec4 dual_quat0[128];
-uniform vec4 dual_quat1[128];
+
 
 in int jid0;
 in int jid1;

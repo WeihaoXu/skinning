@@ -225,15 +225,7 @@ int main(int argc, char* argv[])
 		return &radius;
 	};
 
-	auto dual_quat0_data = [&mesh]() -> const void* {
-		auto ret = mesh.skeleton.collectDualQuatPart0();
-		return ret;
-	};
 
-	auto dual_quat1_data = [&mesh]() -> const void* {
-		auto ret = mesh.skeleton.collectDualQuatPart1();
-		return ret;
-	};
 
 
 
@@ -251,8 +243,7 @@ int main(int argc, char* argv[])
 	ShaderUniform bone_transform = { "bone_transform", matrix_binder, bone_transform_data };
 	ShaderUniform cylinder_radius = { "cylinder_radius", float_binder, cylinder_radius_data};
 
-	ShaderUniform dual_quat0 = { "dual_quat0", vector_binder, dual_quat0_data };
-	ShaderUniform dual_quat1 = { "dual_quat1", vector_binder, dual_quat1_data };
+
 
 	// Floor render pass
 	RenderDataInput floor_pass_input;
@@ -279,8 +270,6 @@ int main(int argc, char* argv[])
 	// TIPS: You won't need vertex position in your solution.
 	//       This only serves the stub shader.
 	object_pass_input.assign(7, "vert", mesh.vertices.data(), mesh.vertices.size(), 4, GL_FLOAT);
-	object_pass_input.assign(10, "dual_quat0", mesh.skeleton.dual_quat_part0.data(), mesh.skeleton.dual_quat_part0.size(), 4, GL_FLOAT);
-	object_pass_input.assign(11, "dual_quat1", mesh.skeleton.dual_quat_part1.data(), mesh.skeleton.dual_quat_part1.size(), 4, GL_FLOAT);
 
 	object_pass_input.assignIndex(mesh.faces.data(), mesh.faces.size(), 3);
 	object_pass_input.useMaterials(mesh.materials);
@@ -295,8 +284,7 @@ int main(int argc, char* argv[])
 			{ std_model, std_view, std_proj,
 			  std_light,
 			  std_camera, object_alpha,
-			  joint_trans, joint_rot,
-			  dual_quat0, dual_quat1
+			  joint_trans, joint_rot
 			},
 			{ "fragment_color" }
 			);
