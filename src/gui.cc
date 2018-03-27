@@ -63,7 +63,8 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 		else
 			roll_speed = roll_speed_;
 		// FIXME: actually roll the bone here
-		if(current_bone_ != -1) {
+		bool drag_bone = drag_state_ && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
+		if(drag_bone && current_bone_ != -1) {
 			Joint& curr_joint = mesh_->skeleton.joints[current_bone_];
 			glm::vec3 curr_joint_pos = mesh_->getJointPosition(curr_joint.joint_index);
 			glm::vec3 parent_joint_pos = mesh_->getJointPosition(curr_joint.parent_index);
