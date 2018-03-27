@@ -1,3 +1,7 @@
+/*
+ * Reference: The QuatTrans2UDQ and DQToMatrix methods are cited from https://www.cs.utah.edu/~ladislav/dq/index.html.
+ */
+
 R"zzz(
 #version 330 core
 uniform vec4 light_position;
