@@ -37,8 +37,8 @@ void Skeleton::refreshCache()
 	joint_trans.resize(joints.size());
 
 	for (size_t i = 0; i < joints.size(); i++) {
-		joint_rot[i] = joints[i].rel_orientation;
-		// joint_rot[i] = joints[i].orientation;
+		// joint_rot[i] = joints[i].rel_orientation;
+		joint_rot[i] = joints[i].orientation;
 		joint_trans[i] = joints[i].position;
 	}
 }
@@ -119,26 +119,13 @@ void Mesh::loadPmd(const std::string& fn)
 	// computation of orientation: https://stackoverflow.com/questions/1171849/finding-quaternion-representing-the-rotation-from-one-vector-to-another
 	for(int i = 0; i < skeleton.joints.size(); i++) {
 		Joint& curr_joint = skeleton.joints[i];
-		if(curr_joint.parent_index == -1) {	// this is a root jonit
-			curr_joint.orientation = glm::fquat();	// identity.
-			curr_joint.rel_orientation = glm::fquat();	// identity.
-			// std::cout << "root joint" << std::endl;
-		}
-		else {
-			Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
-			// calculate orientation w.r.t. y axis.
-			glm::vec3 y_direct(0.0, 1.0, 0.0);
-			glm::vec3 init_direct = curr_joint.init_position - parent_joint.init_position;
-			curr_joint.init_orientation = quaternion_between_two_directs(y_direct, init_direct);
-			curr_joint.orientation = curr_joint.init_orientation;
-			
-			// init T as identity.
-			curr_joint.rel_orientation = glm::fquat();	// relative orientation w.r.t. parent. Init as identity.
 
-			// insert current joint into parent's children list
+		curr_joint.orientation = glm::fquat();
+		curr_joint.rel_orientation = glm::fquat();
+		if(curr_joint.parent_index != -1) {
+			Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
 			parent_joint.children.push_back(curr_joint.joint_index);
-			// std::cout << "non-root joint. number: " << curr_joint.joint_index << " parent: " << curr_joint.parent_index << std::endl;
-		}
+		}	
 		// skeleton.bone_transforms.push_back(glm::mat4(1.0));	// for tmp use
 	}
 
@@ -170,6 +157,7 @@ void Mesh::rotate_bone(const int bone_index, const glm::fquat& rotate_quat) {
 	Joint& curr_joint = skeleton.joints[bone_index];
 	Joint& parent_joint = skeleton.joints[curr_joint.parent_index];
 	parent_joint.rel_orientation = rotate_quat * parent_joint.rel_orientation;
+	parent_joint.orientation = rotate_quat * parent_joint.orientation;
 	update_children(parent_joint, rotate_quat);
 }
 
@@ -177,8 +165,8 @@ void Mesh::rotate_bone(const int bone_index, const glm::fquat& rotate_quat) {
 void Mesh::update_children(Joint& parent_joint, const glm::fquat& rotate_quat) {
 	for(int child_index : parent_joint.children) {
 		Joint& child_joint = skeleton.joints[child_index];
-		child_joint.rel_orientation = rotate_quat * child_joint.rel_orientation;
-		child_joint.position = parent_joint.position + parent_joint.rel_orientation * (child_joint.init_position - parent_joint.init_position);
+		child_joint.orientation = rotate_quat * child_joint.orientation;
+		child_joint.position = parent_joint.position + parent_joint.orientation * (child_joint.init_position - parent_joint.init_position);
 		update_children(child_joint, rotate_quat);
 	}
 }
