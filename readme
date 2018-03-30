@@ -1,0 +1,11 @@
+Name:
+Weihao Xu, Ming Zong
+
+Explanations:
+- For the roll mode, the mouse left button need to be kept pressed (like dragging mode), along with pressing left/right arrow keys.
+
+Extra credits:
+- Pressing the middle button of mouse when hovering over any bones and dragging will translate the root. 
+- I transformed the rotation quaterion and translation vector into dual_quaternions in blending shaders. However, I failed to figure out how to use the dual_quaternion to transform vertex position (do we apply it to vert? ). I applied the dual_quaternion based on two joints separately, and weighted-sumed the position (basically it's still linear blending).
+
+ 
